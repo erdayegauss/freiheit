@@ -1,0 +1,98 @@
+{
+  "engines": {
+    "composer": ""
+  },
+  "name": "freiheit-network",
+  "version": "0.1.0",
+  "description": "freiheit project",
+  "scripts": {
+    "start": "start-network"
+  },
+  "keywords": [
+    "zero",
+    "blockchain",
+    "tutorial",
+    "composer",
+    "hyperledger"
+  ],
+  "author": "Shuan Zhao, IBM Blockchain Engineer",
+  "license": "Apache-2.0",
+  "license-check-config": {
+    "src": [
+      "**/*.js",
+      "!./coverage/**/*",
+      "!./node_modules/**/*",
+      "!./network/out/**/*",
+      "!./HTML/js-utils/**/*",
+      "!./network/scripts/**/*"
+    ],
+    "path": "header.txt",
+    "blocking": true,
+    "logInfo": false,
+    "logError": true
+  },
+  "nyc": {
+    "exclude": [
+      "coverage/**",
+      "network/features/**",
+      "network/out/**",
+      "network/test/**"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "all": true,
+    "check-coverage": true,
+    "statements": 100,
+    "branches": 100,
+    "functions": 100,
+    "lines": 100
+  },
+  "dependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "composer-admin": "0.19.16",
+    "composer-client": "0.19.16",
+    "composer-common": "0.19.16",
+    "composer-connector-embedded": "0.19.16",
+    "composer-cucumber-steps": "0.19.16",
+    "composer-runtime": "0.19.16",
+    "composer-runtime-hlfv1": "0.19.16",
+    "cucumber": "^2.2.0",
+    "eslint": "^3.6.1",
+    "extend": "",
+    "istanbul": "^0.4.5",
+    "jsdoc": "^3.5",
+    "license-check": "^1.1.5",
+    "fabric-client": "1.1.0",
+    "fabric-ca-client": "1.1.0",
+    "body-parser": "^1.18.1",
+    "cfenv": "^1.0.4",
+    "composefile": "^0.3.0",
+    "connect-busboy": "0.0.2",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.4",
+    "date-format": "",
+    "docker-compose": "^0.4.3",
+    "ejs": "",
+    "express": "^4.15.4",
+    "express-bearer-token": "^2.1.1",
+    "express-jwt": "^5.3.1",
+    "express-session": "^1.15.5",
+    "find": "^0.2.9",
+    "fs": "0.0.1-security",
+    "http": "0.0.0",
+    "https": "^1.0.0",
+    "jsonlint": "^1.6.3",
+    "mime": "^2.0.2",
+    "os": "^0.1.1",
+    "path": "^0.12.7",
+    "shelljs": "^0.8.2",
+    "sleep": "^5.1.1",
+    "uuid": "^3.1.0",
+    "vcap_services": "^0.3.4",
+    "websocket": "^1.0.24",
+    "log4js": "^0.6.38"
+  }
+}

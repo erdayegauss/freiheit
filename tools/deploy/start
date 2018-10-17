@@ -1,0 +1,244 @@
+#!/bin/bash
+
+# Exit on first error, print all commands.
+  set -ev
+
+   YELLOW='\033[1;33m'
+   RED='\033[1;31m'
+   GREEN='\033[1;32m'
+   RESET='\033[0m'
+
+ # Grab the current directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+NETWORK_NAME="freiheit-network"
+
+# indent text on echo
+function indent() {
+  c='s/^/       /'
+  case $(uname) in
+    Darwin) sed -l "$c";;
+    *)      sed -u "$c";;
+  esac
+}
+
+# Grab the current directory
+function getCurrent()
+    {
+        showStep "getting current directory"
+        DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+        THIS_SCRIPT=`basename "$0"`
+        showStep "Running '${THIS_SCRIPT}'"
+    }
+
+# displays where we are, uses the indent function (above) to indent each line
+function showStep ()
+    {
+        echo -e "${YELLOW}=====================================================" | indent
+        echo -e "${RESET}-----> $*" | indent
+        echo -e "${YELLOW}=====================================================${RESET}" | indent
+    }
+
+function cleanup ()
+    {
+
+
+      CONTAINER_IDS=$(docker ps -aq)
+echo
+      if [ -z "$CONTAINER_IDS" -o "$CONTAINER_IDS" = " " ]; then
+              echo "========== No containers available for deletion =========="
+      else
+              docker rm -f $CONTAINER_IDS
+      fi
+echo
+
+
+      rm -rf ~/.composer
+
+    }
+
+function cryptoGeneration ()
+{
+
+
+  if [ "$1" == "extend" ]; then
+       cryptogen extend  --config=crypto-config.yaml
+  fi
+
+  if [ "$1" == "generate" ]; then
+       rm -rf crypto-config/*
+       cryptogen generate  --config=crypto-config.yaml  --output=crypto-config
+  fi
+
+  if [ "$1" == "no" ]; then
+        echo "This time no change to the crypto-config"
+  fi
+
+
+}
+
+
+
+function generateBlockTX ()
+{
+  export FABRIC_CFG_PATH=$(pwd)
+  configtxgen -profile ComposerOrdererGenesis -outputBlock ./composer-genesis.block
+  configtxgen -profile ComposerChannel -outputCreateChannelTx ./composer-channel.tx -channelID composerchannel -asOrg Org1MSP
+
+}
+
+function startContainers ()
+{
+  # Grab the current directory
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+#  docker-compose -f "${DIR}"/docker-compose.yaml down
+  docker-compose -f "${DIR}"/docker-compose.yaml up -d
+
+}
+
+
+function createChannel ()
+{
+  docker exec peer0.org1.example.com peer channel create -o orderer.example.com:7050 -c composerchannel -f /etc/hyperledger/configtx/composer-channel.tx
+#  docker exec peer0.org1.example.com peer channel create -o orderer.example.com:7050 -c composerchannel -f /etc/hyperledger/configtx/composer-channel.tx  --cafile  /etc/hyperledger/configtx/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --tls
+
+#  docker exec peer0.org2.example.com peer channel create -o orderer.example.com:7050 -c composerchannel2 -f /etc/hyperledger/configtx/composer-channel2.tx
+}
+
+function joinChannel ()
+{
+
+#########non-TLS version ###########
+
+  docker exec -e CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp  -e  CORE_PEER_ADDRESS=peer0.org1.example.com:7051 -e  CORE_PEER_LOCALMSPID="Org1MSP"   peer0.org1.example.com    peer channel join -b composerchannel.block
+#  docker exec -e CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org2.example.com/msp  -e  CORE_PEER_ADDRESS=peer0.org2.example.com:7051 -e  CORE_PEER_LOCALMSPID="Org2MSP"   peer0.org2.example.com    peer channel join -b /etc/hyperledger/configtx/composerchannel.block
+  docker exec -e CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp  -e  CORE_PEER_ADDRESS=peer1.org1.example.com:7051 -e  CORE_PEER_LOCALMSPID="Org1MSP"   peer1.org1.example.com    peer channel join -b /etc/hyperledger/configtx/composerchannel.block
+#  docker exec -e CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org2.example.com/msp  -e  CORE_PEER_ADDRESS=peer1.org2.example.com:7051 -e  CORE_PEER_LOCALMSPID="Org2MSP"   peer1.org2.example.com    peer channel join -b /etc/hyperledger/configtx/composerchannel.block
+
+
+
+########## TLS version join composerchannel ########
+#docker exec -e CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp -e  CORE_PEER_ADDRESS=peer0.org1.example.com:7051 -e  CORE_PEER_LOCALMSPID="Org1MSP" -e  CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/configtx/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt  peer0.org1.example.com    peer channel join -b composerchannel.block
+
+
+#docker exec -e CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp -e  CORE_PEER_ADDRESS=peer0.org1.example.com:7051 -e  CORE_PEER_LOCALMSPID="Org1MSP" -e  CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/configtx/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt  peer0.org1.example.com    peer channel join -b composerchannel.block
+
+
+  #docker exec -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org2.example.com/msp"  peer0.org2.example.com   peer channel join -b composerchannel2.block --certfile /etc/hyperledger/configtx/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
+
+#########  join the peer1.org1.example to composerchannel2 #########
+#docker exec -e CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/configtx/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/ -e  CORE_PEER_ADDRESS=peer1.org1.example.com:7051 -e  CORE_PEER_LOCALMSPID="Org1MSP" -e  CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/configtx/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls/ca.crt  peer0.org2.example.com    peer channel join -b composerchannel2.block
+
+
+}
+
+
+PRIVATE_KEY=/Users/shuan/Documents/blockchain/HyperledgerComposer/pershing/tools/deploy/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/3658098008ca9ddbbed050b6ac6849a7fd15c1ec7920abcb04f063695ad1ccfa_sk
+CERT=/Users/shuan/Documents/blockchain/HyperledgerComposer/pershing/tools/deploy/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem
+
+function createAdmin ()
+{
+
+
+  if composer card list -c PeerAdmin@hlfv1 > /dev/null; then
+      composer card delete -c PeerAdmin@hlfv1
+  fi
+
+  composer card create -p ./connection_admin.json -u PeerAdmin -c "${CERT}" -k "${PRIVATE_KEY}" -r PeerAdmin -r ChannelAdmin --file ./PeerAdmin@hlfv1.card
+  composer card import --file ./PeerAdmin@hlfv1.card
+  rm ./PeerAdmin@hlfv1.card
+}
+
+function setupComposer ()
+{
+
+
+
+  if composer card list -c admin@freiheit-network > /dev/null; then
+      composer card delete -c admin@freiheit-network
+  fi
+
+  #composer card create -p ./connection_admin.json -u admin -n zerotoblockchain-network -c "${CERT}" -k "${PRIVATE_KEY}" -r PeerAdmin -r ChannelAdmin  --file ./networkadmin.card
+
+#  composer card import -f networkadmin.card -c admin@zerotoblockchain-network
+
+
+  ## TLS enabled,   install the chaincode first
+  composer network install -c PeerAdmin@hlfv1  -a ../bna/freiheit-network.bna
+
+
+  ### prepare all the network card for the network ###############
+  #### 1 request the identity (admin has nature identity)  #######
+  ################ 2 create and import the card  #################
+  #  composer identity request -c PeerAdmin@hlfv1 -u admin -s adminpw -d admin
+
+
+composer network start -c PeerAdmin@hlfv1   -n freiheit-network  -A admin  -S adminpw -f admin@freiheit-network.card -V 0.1.0
+
+composer card import --file admin@freiheit-network.card
+
+composer network ping --card admin@freiheit-network
+
+rm ./admin@freiheit-network.card
+
+
+ # composer card create -p ./connection_admin.json -u admin -n zerotoblockchain-network -s adminpw -r PeerAdmin -r ChannelAdmin  --file ./networkadmin.card
+
+
+
+##############now
+#  composer network start -c admin@zerotoblockchain-network   -n zerotoblockchain-network -V 0.1.6  -o endorsementPolicyFile=./endorse.json -A admin  -C "${CERT}"
+#  composer network start -c PeerAdmin@hlfv1   -n zerotoblockchain-network  -A admin  -C $CERT -K  $PRIVATE_KEY -f admin@zerotoblockchain-network.card -V 0.1.6
+
+#composer card create -p ./connection_admin.json -u admin -n zerotoblockchain-network -c $CERT -k $PRIVATE_KEY
+
+#composer card import --file admin@zerotoblockchain-network.card
+
+#  composer network ping --card admin@zerotoblockchain-network
+#  composer card import --file networkadmin.card
+
+
+
+
+###### start the network, and register the identity #######
+###### put the identity in -A -C option pair, then ########
+###### the indentity is registered when network start #####
+
+#  composer network start -c PeerAdmin@hlfv1   -n zerotoblockchain-network  -A admin  -C ./crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/ca.crt  -V 0.1.6
+# composer network start -c PeerAdmin@hlfv1   -n zerotoblockchain-network  -A admin  -S adminpw  -V 0.1.6
+
+
+
+  #showStep "pinging admin and buyer cards"
+  #composer network ping --card admin@zerotoblockchain-network
+  #composer network ping --card buyer@zerotoblockchain-network
+
+}
+
+
+showStep "clean up all the history containers"
+cleanup
+
+showStep "prepare the crypto-config"
+#cryptoGeneration  no
+
+showStep "prepare the genesis block and tx files"
+#generateBlockTX
+
+showStep "start up the docker containers"
+startContainers
+
+showStep "wait until the containers are ready"
+sleep 10
+
+
+showStep "create channel and join the peer0.org1"
+createChannel
+joinChannel
+
+showStep "create new Admin Card"
+createAdmin
+
+showStep "setup composer"
+setupComposer

@@ -1,0 +1,2 @@
+{
+    "US_English": {"active": "yes", "menu": "US English", "model": "en-US_BroadbandModel", "voice": "en-US_AllisonVoice", "data": "/text/en-US/prompts.json"}   }

@@ -1,0 +1,155 @@
+<html><head>
+   <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Sanye's first blockchain">
+    <meta name="author" content="Shuan Zhao, IBM Engineer">
+
+    <title id="title"></title>
+
+     </head><body class="tutorial" onLoad="initPage()">
+
+
+        <div class="cover">
+            <div class="scrollingPaneLeft">
+                <div class="container" >
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-ex-collapse" style="background-color: #E0E0E0">
+                            <span class="sr-only" >Toggle navigation</span>
+                            <span class="icon-bar" ></span>
+                            <span class="icon-bar" ></span>
+                            <span class="icon-bar" ></span>
+                        </button>
+                        <a class="navbar-brand" href="#" style="color: #008571;" id="titleBar"><span></span></a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="navbar-ex-collapse">
+                      <ul class="nav navbar-nav ">
+                        <span class="face" id="myFace"></span>
+                       <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Select Language<b class="caret" ></b></a>
+                          <ul class="dropdown-menu" id="lang_choices">
+            				      </ul>
+                        </li>
+                        <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span id="idx_admin"></span><b class="caret" ></b></a>
+                                <ul class="dropdown-menu" id="Z2B_resources">
+                                    <li><a onclick="loadAdminUX()"><span id="idx_adminUX"></span></a></li>
+                                    <li><a onclick="preLoad()"><span id="idx_preload"></span></a></li>
+                                </ul>
+                              </li>
+                              <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="idx_roles"><b class="caret" ></b></a>
+                                    <ul class="dropdown-menu" id="Z2B_Role">
+                                        <li><a onclick="loadBuyerUX()"><span id="idx_buyer"></span></a></li>
+                                    </ul>
+                                  </li>
+                               </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li class="active">
+                                <a href="#">Home</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+
+                <form  name="myform">
+                  Peer: <input type="text" name="peers"><br>
+                  Name: <input type="text" name="name"><br>
+                  Version: <input type="text" name="version"><br><br>
+                  <input type="button" name="submit" value="Submit" onclick="install()">
+                </form>
+
+                <form  name="peerform">
+                  PeerName: <input type="text" name="peerName"><br>
+                  PeerOrg: <input type="text" name="peerOrg"><br>
+                  TLS: <input type="text" name="tls"><br><br>
+                  <input type="button" name="newpeer" value="New Peer" onclick="newPeer()">
+                </form>
+
+                <form  name="channelform">
+                  channelName: <input type="text" name="channelName" value="channeltest"><br>
+                  channelConfigPath: <input type="text" name="channelConfigPath" value="/Users/shuan/Documents/blockchain/HyperledgerComposer/pershing/tools/deploy/"><br>
+                  orgName: <input type="text" name="orgName" value="org1"><br>
+                  peers: <input type="text" name="peers" value="peer0.org1.example.com"><br><br>
+                  <input type="button" name="newchannel" value="New Channel" onclick="newChannel()">
+                  <input type="button" name="joinchannel" value="Join Channel" onclick="joinChannel()">
+                </form>
+
+
+
+                <h3 id="rm">Resource Management</h3>
+                <table id="resourceManagement" width="98%"><tr><th id="rm_api">API</th><th id="rm_param">Param</th></tr>
+                  <tr><td onclick="listRegistry()" class="showfocus" id="rm_lr_api">listRegistry</td><td><select id="registryName" width="25%">
+                  </td></tr>
+                  <tr><td onclick="listAssets()" class="showfocus" id="rm_la_api">listAssets</td><td id="rm_la_param"></td></tr>
+                  <tr><td onclick="addMember()" class="showfocus" id="rm_am_api">addMember</td><td id="rm_am_param"></td></tr>
+                  <tr><td onclick="issueIdentity()" class="showfocus" id="rm_ii_api">issueIdentity</td><td><select id="registryName2" width="25%"></select></td></tr>
+                  <tr><td onclick="checkCard()" class="showfocus" id="rm_cc_api">checkCard</td><td><select id="registryName3" width="25%"></select></td></tr>
+                  <tr><td onclick="createCard()" class="showfocus" id="rm_cc2_api">createCard</td><td><select id="registryName4" width="25%"></select></td></tr>
+                  <tr><td onclick="removeMember()" class="showfocus" id="rm_rm_api">removeMember</td><td><select id="registryName5" width="25%"></td></tr>
+                  <tr><td class="showfocus strike" id="rm_gs_api"></td><td></td></tr>
+                  </table>
+                  <h3>BC</h3>
+                  <table id="blockchain" width="98%"><tr><th id="bc_api">blockchain</th><th id="bc_param"></th></tr>
+                    <tr><td onclick="getChainInfo()" class="showfocus" id="bc_gi_api">getChainInfo</td><td id="bc_gi_param"></td></tr>
+                    <tr><td onclick="getChainEvents()" class="showfocus" id="bc_ge_api">getChainEvents</td><td id="bc_ge_param"></td></tr>
+                    <tr><td onclick="getHistorian()" class="showfocus" id="bc_gh_api">getHistorian</td><td id="bc_gh_param"></td></tr>
+                  </table>s
+
+
+
+
+                    <div class="container" id="orderbody" height="100%">
+                    <h2>Create the order</h2>
+                    <tbody><table id="buyerTable" width="98%"><tr><th id="sel_prompt"><span id="selectBuyer">Buyer: </span><select class="showfocus" name="buyer" id="buyer" width="30%">
+                    </select></th></tr>
+                    </table>
+
+                    <table id="SellerTable" width="98%"><tr><th><span id="selectVendor">Vendor: </span><select class="showfocus" name="seller" id="seller" width="30%">
+                    </select></th></tr>
+                    </table>
+
+                    </tbody>
+
+                    <div class="scrollingPane showfocus buyer" id="orderDiv">
+                              <table width="100%">
+                                  <tbody><tr><th id="cn_on">Order Number</th><th id="cn_status">Status</th><th id="cn_date">Date</th><th id="cn_total">Total</th></tr>
+                                  <tr><td id="orderNo" align="center">xxx</td><td id="status" align="center">New Order</td><td id="today" align="center">2018-05-15T06:15:08.866Z</td><td id="amount" align="right" width="15%">$0.00</td>
+                              </tr></tbody></table>
+                              <table id="itemTable" width="100%">
+                                  <tbody><tr><td id="cn_selectItem" width="10%">Select Item</td><td width="60%"><select id="items"></select></td>
+                                  <td width="15%"><button class="showfocus" id="addItem" onclick="addItem()">Add Item</button></td><td width="15%"></td></tr>
+                              </tbody></table>
+                   </div>
+
+                  <div class="bottom-hold-upper showfocus">
+                        <button class-"button-wide showfocus" id="newOrder" onclick="displayOrderForm()">NewOrder</button>
+                        <button class-"button showfocus" id="submitNewOrder" style="display:none">Submit</button>
+                        <button class="button-wide showfocus" id="orderStatus" onclick="listOrders()">Display Order Status</button>
+                  </div>
+                  </div>
+
+
+
+       </div>
+
+                        <div class="scrollingPaneRight">
+                          <div class="showfocus" id="admin-forms" ></div>
+                          <div id="messages"></div>
+                        </div>
+    </div>
+
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    <script src="js-utils/jquery-3.1.0.min.js"></script>
+    <script src="js-utils/bootstrap.min.js"></script>
+    <script src="js/z2b-utilities.js"></script>
+    <script src="js/z2b-initiate.js"></script>
+    <script src="js/z2b-admin.js"></script>
+    <script src="js/z2b-buyer.js"></script>
+    <script src="js/z2b-events.js"></script>
+    <script src="js/z2b-query.js"></script>
+    <link href="CSS/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="CSS/bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="CSS/pageStyles.css" rel="stylesheet" type="text/css">
+		</body></html>

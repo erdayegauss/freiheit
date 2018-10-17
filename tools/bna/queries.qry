@@ -1,0 +1,8 @@
+/**
+ * New query file
+ */
+query selectOrders {
+  description: "Select all Orders"
+  statement:
+      SELECT org.acme.Z2BTestNetwork.Order
+}
